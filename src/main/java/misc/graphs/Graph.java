@@ -64,7 +64,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     // get stuck, let us know we'll try and help you get unstuck as best as we can.
     private IList<V> vertices;
     private IList<E> edges;
-    IDictionary<V, ChainedHashSet<E>> adjList;   
+    IDictionary<V, ISet<E>> adjList;   
     
     /**
      * Constructs a new graph based on the given vertices and edges.
@@ -74,7 +74,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      *                                   present in the 'vertices' list
      */
     public Graph(IList<V> vertices, IList<E> edges) {   
-        this.adjList = new ChainedHashDictionary<V, ChainedHashSet<E>>();
+        this.adjList = new ChainedHashDictionary<V, ISet<E>>();
         for (V vertex : vertices) {
             adjList.put(vertex, new ChainedHashSet<E>());
         }
@@ -167,7 +167,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      */
     public IList<E> findShortestPathBetween(V start, V end) {     
         IDictionary<V, Double> distances = new ChainedHashDictionary<V, Double>();
-        IDictionary<V, DoubleLinkedList<E>> theEdges = new ChainedHashDictionary<V, DoubleLinkedList<E>>();
+        IDictionary<V, IList<E>> theEdges = new ChainedHashDictionary<V, IList<E>>();
         IPriorityQueue<Vertex> minDist = new ArrayHeap<Vertex>();
         ISet<V> seen = new ChainedHashSet<V>();
         
