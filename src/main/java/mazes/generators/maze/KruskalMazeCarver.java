@@ -29,7 +29,7 @@ public class KruskalMazeCarver implements MazeCarver {
         ISet<Room> rooms = maze.getRooms();
         Random rand = new Random();
         
-        // set random weights
+        //set random weights
         for (Wall wall : walls) {
             wall.setDistance(rand.nextDouble());
         }

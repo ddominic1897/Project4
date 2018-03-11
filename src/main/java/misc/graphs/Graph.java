@@ -64,7 +64,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     // get stuck, let us know we'll try and help you get unstuck as best as we can.
     private IList<V> vertices;
     private IList<E> edges;
-    IDictionary<V, ChainedHashSet<E>> adjList;   
+    IDictionary<V, ISet<E>> adjList;   
     
     /**
      * Constructs a new graph based on the given vertices and edges.
@@ -74,7 +74,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      *                                   present in the 'vertices' list
      */
     public Graph(IList<V> vertices, IList<E> edges) {   
-        this.adjList = new ChainedHashDictionary<V, ChainedHashSet<E>>();
+        this.adjList = new ChainedHashDictionary<V, ISet<E>>();
         for (V vertex : vertices) {
             adjList.put(vertex, new ChainedHashSet<E>());
         }
@@ -167,24 +167,20 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      */
     public IList<E> findShortestPathBetween(V start, V end) {     
         IDictionary<V, Double> distances = new ChainedHashDictionary<V, Double>();
-        IDictionary<V, DoubleLinkedList<E>> theEdges = new ChainedHashDictionary<V, DoubleLinkedList<E>>();
+        IDictionary<V, IList<E>> theEdges = new ChainedHashDictionary<V, IList<E>>();
         IPriorityQueue<Vertex> minDist = new ArrayHeap<Vertex>();
         ISet<V> seen = new ChainedHashSet<V>();
         
         //set up vertex distances
         for (V vertex : this.vertices) {
-            theEdges.put(vertex,  new DoubleLinkedList<>());
             distances.put(vertex, Double.POSITIVE_INFINITY);
         }
         distances.put(start, 0.0);  
         minDist.insert(new Vertex(start, 0.0));
+        theEdges.put(start, new DoubleLinkedList<E>());
         
         while (!minDist.isEmpty()) {
             V currentVertex = minDist.removeMin().getVertex();
-            //return path of edges from starting vertex
-            if (currentVertex.equals(end)) {
-                return theEdges.get(currentVertex);
-            }
             //explore if not seen before
             if (!seen.contains(currentVertex)) {
                 seen.add(currentVertex);
@@ -197,28 +193,23 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                         
                         //if dist needs to be updated
                         if (distances.get(other) >= updatedDist) {
-                            //minDist.remove(new Vertex(other, distances.get(other)));
                             minDist.insert(new Vertex(other, updatedDist));
-                            distances.put(other, updatedDist);                            
-                            if (currentVertex.equals(start)) {
-                                theEdges.put(currentVertex, new DoubleLinkedList<E>());
+                            distances.put(other, updatedDist);                        
+                            IList<E> edgeList = new DoubleLinkedList<E>();
+                            for(E edg : theEdges.get(currentVertex)) {
+                                edgeList.add(edg);
                             }
-                            
-                            //copy over to new path
-                            IList<E> updatedEdge = new DoubleLinkedList<E>();
-                            for (E otherEdge : theEdges.get(currentVertex)) {
-                                updatedEdge.add(otherEdge);
-                            }
-                            //update 
-                            theEdges.put(other, (DoubleLinkedList<E>) updatedEdge);
-                            theEdges.get(other).add(edge);                          
+                            theEdges.put(other, edgeList);
+                            theEdges.get(other).add(edge);
                         }
                     }                   
                 }
             }
         }
-        //no path exists
-        throw new NoPathExistsException();        
+        if (!theEdges.containsKey(end)) {
+            throw new NoPathExistsException();
+        }
+        return theEdges.get(end);
     }
     
     private class Vertex implements Comparable<Vertex> {
