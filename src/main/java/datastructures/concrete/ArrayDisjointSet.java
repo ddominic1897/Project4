@@ -67,7 +67,7 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
             throw new IllegalArgumentException();
         }
         int targetIndex = theNodes.get(item);
-        while(pointers[targetIndex] != -1) { 
+        while (pointers[targetIndex] != -1) { 
             targetIndex = pointers[targetIndex];
         }
         return targetIndex;        

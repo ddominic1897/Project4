@@ -82,7 +82,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
             if (edge.getWeight() < 0.0) {
                 throw new IllegalArgumentException();
             }
-            if(!(vertices.contains(edge.getVertex1()) && vertices.contains(edge.getVertex2()))) {
+            if (!(vertices.contains(edge.getVertex1()) && vertices.contains(edge.getVertex2()))) {
                 throw new IllegalArgumentException();
             }
             adjList.get(edge.getVertex1()).add(edge);
@@ -167,13 +167,13 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      */
     public IList<E> findShortestPathBetween(V start, V end) {     
         IDictionary<V, Double> distances = new ChainedHashDictionary<V, Double>();
-        IDictionary<V, DoubleLinkedList<E>> edges = new ChainedHashDictionary<V, DoubleLinkedList<E>>();
+        IDictionary<V, DoubleLinkedList<E>> theEdges = new ChainedHashDictionary<V, DoubleLinkedList<E>>();
         IPriorityQueue<Vertex> minDist = new ArrayHeap<Vertex>();
         ISet<V> seen = new ChainedHashSet<V>();
         
         //set up vertex distances
         for (V vertex : this.vertices) {
-            edges.put(vertex,  new DoubleLinkedList<>());
+            theEdges.put(vertex,  new DoubleLinkedList<>());
             distances.put(vertex, Double.POSITIVE_INFINITY);
         }
         distances.put(start, 0.0);  
@@ -183,13 +183,13 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
             V currentVertex = minDist.removeMin().getVertex();
             //return path of edges from starting vertex
             if (currentVertex.equals(end)) {
-                return edges.get(currentVertex);
+                return theEdges.get(currentVertex);
             }
             //explore if not seen before
             if (!seen.contains(currentVertex)) {
                 seen.add(currentVertex);
                 
-                for(E edge: adjList.get(currentVertex)) {
+                for (E edge: adjList.get(currentVertex)) {
                     V other = edge.getOtherVertex(currentVertex);
                     //haven't seen other vertex
                     if (!seen.contains(other)) {
@@ -201,20 +201,19 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                             minDist.insert(new Vertex(other, updatedDist));
                             distances.put(other, updatedDist);                            
                             if (currentVertex.equals(start)) {
-                                edges.put(currentVertex, new DoubleLinkedList<E>());
+                                theEdges.put(currentVertex, new DoubleLinkedList<E>());
                             }
                             
                             //copy over to new path
-                            DoubleLinkedList<E> updatedEdge = new DoubleLinkedList<E>(); //IList<E> updatedEdge = ?
-                            for (E otherEdge : edges.get(currentVertex)) {
+                            IList<E> updatedEdge = new DoubleLinkedList<E>();
+                            for (E otherEdge : theEdges.get(currentVertex)) {
                                 updatedEdge.add(otherEdge);
                             }
                             //update 
-                            edges.put(other, updatedEdge);
-                            edges.get(other).add(edge);                          
+                            theEdges.put(other, (DoubleLinkedList<E>) updatedEdge);
+                            theEdges.get(other).add(edge);                          
                         }
-                    }
-                   
+                    }                   
                 }
             }
         }
