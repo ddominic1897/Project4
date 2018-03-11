@@ -173,18 +173,24 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
         
         //set up vertex distances
         for (V vertex : this.vertices) {
-            theEdges.put(vertex,  new DoubleLinkedList<>());
             distances.put(vertex, Double.POSITIVE_INFINITY);
         }
         distances.put(start, 0.0);  
         minDist.insert(new Vertex(start, 0.0));
+        theEdges.put(start, new DoubleLinkedList<>());
         
         while (!minDist.isEmpty()) {
             V currentVertex = minDist.removeMin().getVertex();
+            
+            
+            //***************************
             //return path of edges from starting vertex
             if (currentVertex.equals(end)) {
                 return theEdges.get(currentVertex);
             }
+            //********************************
+            
+            
             //explore if not seen before
             if (!seen.contains(currentVertex)) {
                 seen.add(currentVertex);
@@ -198,10 +204,15 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                         //if dist needs to be updated
                         if (distances.get(other) >= updatedDist) {
                             minDist.insert(new Vertex(other, updatedDist));
-                            distances.put(other, updatedDist);                            
-                            if (currentVertex.equals(start)) {
-                                theEdges.put(currentVertex, new DoubleLinkedList<E>());
-                            }
+                            distances.put(other, updatedDist); 
+                            
+                            
+                            //**************************************
+//                            if (currentVertex.equals(start)) {
+//                                theEdges.put(currentVertex, new DoubleLinkedList<E>());
+//                            }
+                            //**************************************
+                            
                             
                             //copy over to new path
                             IList<E> updatedEdge = new DoubleLinkedList<E>();
@@ -216,8 +227,10 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                 }
             }
         }
+        //*********************************
         //no path exists
-        throw new NoPathExistsException();        
+        throw new NoPathExistsException();
+        //**********************************
     }
     
     private class Vertex implements Comparable<Vertex> {
