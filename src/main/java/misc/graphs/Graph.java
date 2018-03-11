@@ -181,15 +181,10 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
         
         while (!minDist.isEmpty()) {
             V currentVertex = minDist.removeMin().getVertex();
-            
-            
-            //***************************
-            //return path of edges from starting vertex
+            //exit if end reached
             if (currentVertex.equals(end)) {
                 return theEdges.get(currentVertex);
-            }
-            //********************************
-            
+            }            
             
             //explore if not seen before
             if (!seen.contains(currentVertex)) {
@@ -206,13 +201,9 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                             minDist.insert(new Vertex(other, updatedDist));
                             distances.put(other, updatedDist); 
                             
-                            
-                            //**************************************
-//                            if (currentVertex.equals(start)) {
-//                                theEdges.put(currentVertex, new DoubleLinkedList<E>());
-//                            }
-                            //**************************************
-                            
+                            if (currentVertex.equals(start)) {
+                                theEdges.put(currentVertex, new DoubleLinkedList<E>());
+                            }                            
                             
                             //copy over to new path
                             IList<E> updatedEdge = new DoubleLinkedList<E>();
@@ -227,10 +218,8 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                 }
             }
         }
-        //*********************************
         //no path exists
         throw new NoPathExistsException();
-        //**********************************
     }
     
     private class Vertex implements Comparable<Vertex> {

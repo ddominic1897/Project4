@@ -45,7 +45,7 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
         int length = pointers.length;
         //update size if necessary
         if (index >= length) {
-            int[] bigger = new int[index * 2]; //pointers.length or index * 2
+            int[] bigger = new int[index * 2];
             for (int i = 0; i < length; i++) {
                 bigger[i] = pointers[i];
             }
