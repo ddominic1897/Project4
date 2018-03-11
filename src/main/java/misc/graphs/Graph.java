@@ -6,14 +6,16 @@
 package misc.graphs;
 
 import datastructures.concrete.ArrayDisjointSet;
+import datastructures.concrete.ArrayHeap;
 import datastructures.concrete.ChainedHashSet;
 import datastructures.concrete.DoubleLinkedList;
+import datastructures.concrete.dictionaries.ChainedHashDictionary;
 import datastructures.interfaces.IDictionary;
 import datastructures.interfaces.IList;
+import datastructures.interfaces.IPriorityQueue;
 import datastructures.interfaces.ISet;
 import misc.Searcher;
 import misc.exceptions.NoPathExistsException;
-import misc.exceptions.NotYetImplementedException;
 
 /**
  * Represents an undirected, weighted graph, possibly containing self-loops, parallel edges,
@@ -60,12 +62,9 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     //
     // Working with generics is really not the focus of this class, so if you
     // get stuck, let us know we'll try and help you get unstuck as best as we can.
-
     private IList<V> vertices;
     private IList<E> edges;
-    //IDictionary<V, ChainedHashSet<E>> theGraph;
-    
-    
+    IDictionary<V, ChainedHashSet<E>> adjList;   
     
     /**
      * Constructs a new graph based on the given vertices and edges.
@@ -74,7 +73,11 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      * @throws IllegalArgumentException  if one of the edges connects to a vertex not
      *                                   present in the 'vertices' list
      */
-    public Graph(IList<V> vertices, IList<E> edges) {        
+    public Graph(IList<V> vertices, IList<E> edges) {   
+        this.adjList = new ChainedHashDictionary<V, ChainedHashSet<E>>();
+        for (V vertex : vertices) {
+            adjList.put(vertex, new ChainedHashSet<E>());
+        }
         for (E edge : edges) {
             if (edge.getWeight() < 0.0) {
                 throw new IllegalArgumentException();
@@ -82,7 +85,9 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
             if(!(vertices.contains(edge.getVertex1()) && vertices.contains(edge.getVertex2()))) {
                 throw new IllegalArgumentException();
             }
-        }        
+            adjList.get(edge.getVertex1()).add(edge);
+            adjList.get(edge.getVertex2()).add(edge);
+        }
        this.vertices = vertices;
        this.edges = edges;            
     }
@@ -146,9 +151,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
             }
         }        
         return minTree;
-    }
-
-    
+    }    
 
     /**
      * Returns the edges that make up the shortest path from the start
@@ -162,14 +165,79 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
      *
      * @throws NoPathExistsException  if there does not exist a path from the start to the end
      */
-    public IList<E> findShortestPathBetween(V start, V end) {
-        //1.update the costs of the vertices.
-            //Instead of trying to update costs, add duplicate elements into your heap.
-        //2. Rather then inserting your vertices directly into your heap, you may want to create
-            //and insert a custom inner class instead. (Why do you suppose that is?)
+    public IList<E> findShortestPathBetween(V start, V end) {     
+        IDictionary<V, Double> distances = new ChainedHashDictionary<V, Double>();
+        IDictionary<V, DoubleLinkedList<E>> edges = new ChainedHashDictionary<V, DoubleLinkedList<E>>();
+        IPriorityQueue<Vertex> minDist = new ArrayHeap<Vertex>();
+        ISet<V> seen = new ChainedHashSet<V>();
         
+        //set up vertex distances
+        for (V vertex : this.vertices) {
+            edges.put(vertex,  new DoubleLinkedList<>());
+            distances.put(vertex, Double.POSITIVE_INFINITY);
+        }
+        distances.put(start, 0.0);  
+        minDist.insert(new Vertex(start, 0.0));
         
+        while (!minDist.isEmpty()) {
+            V currentVertex = minDist.removeMin().getVertex();
+            //return path of edges from starting vertex
+            if (currentVertex.equals(end)) {
+                return edges.get(currentVertex);
+            }
+            //explore if not seen before
+            if (!seen.contains(currentVertex)) {
+                seen.add(currentVertex);
+                
+                for(E edge: adjList.get(currentVertex)) {
+                    V other = edge.getOtherVertex(currentVertex);
+                    //haven't seen other vertex
+                    if (!seen.contains(other)) {
+                        double updatedDist = distances.get(currentVertex) + edge.getWeight();
+                        
+                        //if dist needs to be updated
+                        if (distances.get(other) >= updatedDist) {
+                            //minDist.remove(new Vertex(other, distances.get(other)));
+                            minDist.insert(new Vertex(other, updatedDist));
+                            distances.put(other, updatedDist);                            
+                            if (currentVertex.equals(start)) {
+                                edges.put(currentVertex, new DoubleLinkedList<E>());
+                            }
+                            
+                            //copy over to new path
+                            DoubleLinkedList<E> updatedEdge = new DoubleLinkedList<E>(); //IList<E> updatedEdge = ?
+                            for (E otherEdge : edges.get(currentVertex)) {
+                                updatedEdge.add(otherEdge);
+                            }
+                            //update 
+                            edges.put(other, updatedEdge);
+                            edges.get(other).add(edge);                          
+                        }
+                    }
+                   
+                }
+            }
+        }
+        //no path exists
+        throw new NoPathExistsException();        
+    }
+    
+    private class Vertex implements Comparable<Vertex> {
+        private V vertex;
+        private Double dist;
         
-        throw new NotYetImplementedException();
+        public Vertex(V vertex, double dist) {
+            this.vertex = vertex;
+            this.dist = dist;
+        }
+        
+        public V getVertex() {
+            return this.vertex;
+        }
+        
+        @Override
+        public int compareTo(Graph<V, E>.Vertex o) {
+            return (int) (dist.compareTo(o.dist));
+        }
     }
 }

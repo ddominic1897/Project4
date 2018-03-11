@@ -23,7 +23,6 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
     private IDictionary<T, Integer> theNodes;
     private int index;
     private static final int DEFAULT_CAP = 10;
-    
 
     public ArrayDisjointSet() {
         index = -1;
@@ -68,11 +67,10 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
             throw new IllegalArgumentException();
         }
         int targetIndex = theNodes.get(item);
-        while(pointers[targetIndex] != -1) { //or >= 0
+        while(pointers[targetIndex] != -1) { 
             targetIndex = pointers[targetIndex];
         }
-        return targetIndex;
-        
+        return targetIndex;        
     }
     
     /**
@@ -94,14 +92,13 @@ public class ArrayDisjointSet<T> implements IDisjointSet<T> {
             throw new IllegalArgumentException();
         }
         //find most efficient order of union
-        unionHelper(set1, set2);
-        
+        unionHelper(set1, set2);        
     }
     
     private void unionHelper(int set1, int set2) {
-        int set1Total = Math.abs(pointers[set1]) - 1;
-        int set2Total = Math.abs(pointers[set2]) - 1;
-        if (set1Total >= set2Total) {
+        int set1Rank = Math.abs(pointers[set1]) - 1;
+        int set2Rank = Math.abs(pointers[set2]) - 1;
+        if (set1Rank >= set2Rank) {
             pointers[set2] = set1;
         } else {
             pointers[set1] = set2;
