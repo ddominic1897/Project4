@@ -197,7 +197,6 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                         
                         //if dist needs to be updated
                         if (distances.get(other) >= updatedDist) {
-                            //minDist.remove(new Vertex(other, distances.get(other)));
                             minDist.insert(new Vertex(other, updatedDist));
                             distances.put(other, updatedDist);                            
                             if (currentVertex.equals(start)) {
@@ -210,7 +209,7 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
                                 updatedEdge.add(otherEdge);
                             }
                             //update 
-                            theEdges.put(other, (DoubleLinkedList<E>) updatedEdge);
+                            theEdges.put(other, updatedEdge);
                             theEdges.get(other).add(edge);                          
                         }
                     }                   
