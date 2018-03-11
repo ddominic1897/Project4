@@ -137,13 +137,11 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     public ISet<E> findMinimumSpanningTree() {
         ISet<E> minTree = new ChainedHashSet<>();
         ArrayDisjointSet<V> forest = new ArrayDisjointSet<>();
-        IList<E> sortedEdges = Searcher.topKSort(numEdges(), edges);
-        
+        IList<E> sortedEdges = Searcher.topKSort(numEdges(), edges);        
         //populate "forest"
         for (V vertex: vertices) {
             forest.makeSet(vertex);
-        }
-        
+        }        
         for (E edge : sortedEdges) {
             if (forest.findSet(edge.getVertex1()) != forest.findSet(edge.getVertex2())) {
                 forest.union(edge.getVertex1(), edge.getVertex2());
@@ -169,42 +167,35 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
         IDictionary<V, Double> distances = new ChainedHashDictionary<V, Double>();
         IDictionary<V, IList<E>> theEdges = new ChainedHashDictionary<V, IList<E>>();
         IPriorityQueue<Vertex> minDist = new ArrayHeap<Vertex>();
-        ISet<V> seen = new ChainedHashSet<V>();
-        
+        ISet<V> seen = new ChainedHashSet<V>();        
         //set up vertex distances
         for (V vertex : this.vertices) {
             distances.put(vertex, Double.POSITIVE_INFINITY);
         }
         distances.put(start, 0.0);  
         minDist.insert(new Vertex(start, 0.0));
-        theEdges.put(start, new DoubleLinkedList<>());
-        
+        theEdges.put(start, new DoubleLinkedList<>());        
         while (!minDist.isEmpty()) {
             V currentVertex = minDist.removeMin().getVertex();
             //exit if end reached
             if (currentVertex.equals(end)) {
                 return theEdges.get(currentVertex);
-            }            
-            
+            }                        
             //explore if not seen before
             if (!seen.contains(currentVertex)) {
-                seen.add(currentVertex);
-                
+                seen.add(currentVertex);                
                 for (E edge: adjList.get(currentVertex)) {
                     V other = edge.getOtherVertex(currentVertex);
                     //haven't seen other vertex
                     if (!seen.contains(other)) {
-                        double updatedDist = distances.get(currentVertex) + edge.getWeight();
-                        
+                        double updatedDist = distances.get(currentVertex) + edge.getWeight();                        
                         //if dist needs to be updated
                         if (distances.get(other) >= updatedDist) {
                             minDist.insert(new Vertex(other, updatedDist));
-                            distances.put(other, updatedDist); 
-                            
+                            distances.put(other, updatedDist);                             
                             if (currentVertex.equals(start)) {
                                 theEdges.put(currentVertex, new DoubleLinkedList<E>());
-                            }                            
-                            
+                            }                                                        
                             //copy over to new path
                             IList<E> updatedEdge = new DoubleLinkedList<E>();
                             for (E otherEdge : theEdges.get(currentVertex)) {
@@ -224,16 +215,16 @@ public class Graph<V, E extends Edge<V> & Comparable<E>> {
     
     private class Vertex implements Comparable<Vertex> {
         private V vertex;
-        private Double dist;
+        private Double dist;     
         
         public Vertex(V vertex, double dist) {
             this.vertex = vertex;
             this.dist = dist;
-        }
+        }        
         
         public V getVertex() {
             return this.vertex;
-        }
+        }        
         
         @Override
         public int compareTo(Graph<V, E>.Vertex o) {
